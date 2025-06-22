@@ -1,7 +1,7 @@
-# Agent_Dave_Frontend
+# Business Voice Agent - Frontend
 
 **Live Example:** [AI Agent Dave](https://agent-dave.pla.sh)
-**Backend Repository:** [Agent_Dave_Backend](https://github.com/digispect-intel/Agent_Dave_Backend)
+**Backend Repository:** [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend)
 
 A FastHTML-based frontend for Agent Dave, an AI assistant for David McGrath's business website (digispectintelligence.com). This frontend provides the user interface for interacting with Agent Dave.
 
@@ -20,7 +20,7 @@ This frontend allows visitors to interact with Agent Dave, an AI assistant that 
 ## Prerequisites
 
 - Python 3.8 or higher
-- [Agent_Dave_Backend](https://github.com/digispect-intel/Agent_Dave_Backend) running locally
+- [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend) running locally
 
 ## Configuration
 
@@ -38,13 +38,13 @@ cp .env.example .env
 
 ## Installation and Setup
 
-**Note:** Make sure to also set up and run the [Agent_Dave_Backend](https://github.com/digispect-intel/Agent_Dave_Backend) repository for the complete system.
+**Note:** Make sure to also set up and run the [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend) repository for the complete system.
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/digispect-intel/Agent_Dave_Frontend.git
-cd Agent_Dave_Frontend
+git clone https://github.com/digispect-intel/business_voice_agent_frontend.git
+cd business_voice_agent_frontend
 ```
 
 ### 2. Create a virtual environment
@@ -70,7 +70,7 @@ The application will be available at http://localhost:5001 (or the port specifie
 
 ## Usage
 
-1. Ensure the [Agent_Dave_Backend](https://github.com/digispect-intel/Agent_Dave_Backend) is running
+1. Ensure the [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend) is running
 2. Start the frontend application using the steps above
 3. Open your browser to the local URL
 4. Click "Start Voice Chat" to begin interacting with Agent Dave
@@ -79,7 +79,7 @@ The application will be available at http://localhost:5001 (or the port specifie
 
 ## Integration with Backend
 
-This frontend connects with the [Agent_Dave_Backend](https://github.com/digispect-intel/Agent_Dave_Backend) repository to provide a complete AI assistant experience. The backend handles the voice processing pipeline and AI model integration.
+This frontend connects with the [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend) repository to provide a complete AI assistant experience. The backend handles the voice processing pipeline and AI model integration.
 
 ## License
 
