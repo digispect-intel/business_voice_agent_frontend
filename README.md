@@ -1,6 +1,6 @@
 # Business Voice Agent - Frontend
 
-- **Live Example:** [AI Agent Dave](https://agent-dave.pla.sh)
+- **Live Example:** [AI Agent Dave](https://business-voice-agent.digispectintelligence.solutions/)
 - **Backend Repository:** [business_voice_agent_backend](https://github.com/digispect-intel/business_voice_agent_backend)
 - **Interest Form** [Share your interest by completing this form](https://forms.digispectintelligence.solutions/r4RzLd)
 
