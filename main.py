@@ -6,10 +6,13 @@ import httpx
 import json
 import time 
 from agent_state import get_state
-import uuid
 
 # Create FastHTML app with WebSocket extension
 app, rt = fast_app(exts='ws', hdrs=Theme.yellow.headers())
+
+@app.get("/{fname:path}.{ext:static}")
+def static(fname: str, ext: str):
+    return FileResponse(f'{fname}.{ext}')
 
 # Load environment variables
 load_dotenv()
@@ -17,37 +20,15 @@ load_dotenv()
 # Restack configuration
 restack_api_endpoint = os.environ.get("RESTACK_API_ENDPOINT", "http://localhost:6233")
 
-def generate_room_id(): return f"agent-dave-{uuid.uuid4().hex[:12]}"
-
-room_name = generate_room_id()
-
-# Main UI components
-def create_chat_ui(messages=None):
-    if messages is None: messages = []
-    return Div(
-        *[ChatMessage(msg["role"], msg["content"]) for msg in messages],
-        id="chat-messages",
-        cls=("pt-16", "pb-24")
-    )
-
-def ChatMessage(role, content):
-    colors = dict(user=dict(bg="bg-blue-500", text="text-white"), 
-                  assistant=dict(bg="bg-gray-200", text="text-gray-800"))
-    style = colors.get(role, colors["assistant"])
-    align = "justify-end" if role == "user" else "justify-start"
-    
-    return Div(cls=f'flex {align} mb-4')(
-        Div(cls=f'{style["bg"]} {style["text"]} rounded-2xl p-4 max-w-[80%]')(
-            Strong(role.capitalize(), cls='text-sm font-semibold tracking-wide'),
-            Div(content, cls='mt-2')
-        )
-    )
-
 def create_navbar():
     return NavBar(
         A("Digispect Intelligence", href="https://digispectintelligence.com", target="_blank", rel="noopener noreferrer",
         cls="uk-visible@m hover:text-primary transition-colors duration-1000"),
-        brand=H3("AI Agent Dave", cls="hover:text-primary transition-colors duration-1000"),
+        brand=H3(
+            Img(src="/static/DI_logo_white.svg", alt="DI Logo", cls="w-6 h-6 mr-1 sm:mr-2"),
+            "Business Voice Agent",
+            cls="hover:text-primary transition-colors duration-1000 flex items-center"
+        ),
         sticky=True,
         cls="px-6 py-3 shadow-sm bg-background z-50"
     )
@@ -59,28 +40,33 @@ def create_center_pane():
             Div(id="speaker-status", cls="text-center mb-4 text-lg font-medium"),
             Section(
                 DivCentered(
-                    H3("Ready for your own AI agent?"),
+                    H3("Ready for your own AI agent?", cls="md:text-4xl"),
                         P("Contact David to create custom AI Solutions", Br(), "that ",
                         Span("transform your business", cls="color-pulse"), ".",
-                        cls=(TextPresets.muted_sm, "py-2")),
+                        cls=(TextPresets.muted_sm, "py-2 md:text-xl")),
                     cls="text-center"
                 ),
                 DivCentered(
                     H5(A("david.mcgrath@digispectintelligence.com", 
                       href="mailto:david.mcgrath@digispectintelligence.com",
-                      cls="text-blue-600 hover:text-blue-800")),
-                    A(Button("Visit My Website →", cls=(ButtonT.secondary, "mt-4")), 
-                        href="https://digispectintelligence.com/contact#overview", 
-                        target="_blank", rel="noopener noreferrer"),
+                      cls="text-primary hover:text-yellow-600 md:text-2xl")),
+                    Div(
+                        A(Button("Show Interest →", cls=(ButtonT.secondary, "mt-4")), 
+                            href="https://forms.digispectintelligence.solutions/r4RzLd", 
+                            target="_blank", rel="noopener noreferrer"),
+                        A(Button("Visit Website →", cls=(ButtonT.secondary, "mt-4")), 
+                            href="https://digispectintelligence.com/contact#overview", 
+                            target="_blank", rel="noopener noreferrer"),
+                        cls="flex flex-row gap-4 justify-center mt-4"
+                    ),
                     cls="space-y-5"
                 ),
                 cls=(SectionT.muted, "p-6 rounded-lg")
             ),
-            cls="space-y-6"
+            cls="space-y-2 md:space-y-6"
         ),
-        cls="py-8"
+        cls="md:py-2 lg:py-8"
     )
-
 
 def handle_api_error(endpoint_name, exception, status_code=None):
     """Centralized error handling for API calls"""
@@ -111,7 +97,10 @@ def handle_api_error(endpoint_name, exception, status_code=None):
 def homepage():
     # Get LiveKit credentials for direct connection
     from livekit import api
-    
+
+    state = get_state()
+    if not state.room_name: state.update_room()
+
     # Get API key and secret from environment variables
     api_key = os.environ.get("LIVEKIT_API_KEY")
     api_secret = os.environ.get("LIVEKIT_API_SECRET")
@@ -123,20 +112,23 @@ def homepage():
         .with_name("User") \
         .with_grants(api.VideoGrants(
             room_join=True,
-            room=room_name,
+            room=state.room_name,
         ))
     
     jwt = token.to_jwt()
-    
-    return Container(
+
+    return Title("Business Voice Agent - Digispect Intelligence"), Container(
         create_navbar(),
+        # Div(
+        #     create_chat_ui(), 
+        #     id="chat-container",
+        #     hx_ext="ws",
+        #     ws_connect="/ws"
+        # ),
         Div(
-            create_chat_ui(), 
-            id="chat-container",
-            hx_ext="ws",
-            ws_connect="/ws"
+            create_center_pane(),
+            cls="flex items-center justify-center min-h-[calc(60vh)]"  # Center vertically
         ),
-        create_center_pane(),
         Div(
             Div(id="connection-status", cls="text-center mb-2"),
             DivHStacked(
@@ -153,7 +145,7 @@ def homepage():
             @keyframes colorPulse {
                 0%, 30%, 100% { color: hsl(var(--text-primary)); }
                 60% { color: hsl(var(--primary)); }
-                99% { color: hsl(var(--primary)); }
+                90% { color: hsl(var(--primary)); }
             }
             """),
         Style("""
@@ -174,7 +166,7 @@ def homepage():
 
         async function startVoiceChat() {{
             document.getElementById('start-chat-button').disabled = true;
-            document.getElementById('connection-status').innerHTML = '<div class="text-blue-500">Starting agent...</div>';
+            document.getElementById('connection-status').innerHTML = '<div class="text-primary">Starting agent...</div>';
             
             try {{
                 const response = await fetch('/start_agent', {{method: 'POST'}});
@@ -224,7 +216,7 @@ def homepage():
                 
                 if (aiSpeaking || userSpeaking) {{
                     let state = aiSpeaking ? 'Agent Dave is speaking...' : 'Listening...';
-                    document.getElementById('speaker-status').innerHTML = `<div class="text-blue-500">${{state}}</div>`;
+                    document.getElementById('speaker-status').innerHTML = `<div class="text-primary">${{state}}</div>`;
                 }} else {{
                     speakerTimeout = setTimeout(() => {{
                         document.getElementById('speaker-status').innerHTML = '<div class="text-gray-500">Waiting...</div>';
@@ -255,16 +247,17 @@ def homepage():
         }}
         """)
     )
+
 @rt('/start_agent', methods=['POST'])
 async def start_agent():
     try:
-        from agent_state import get_state
         state = get_state()
-        
+        if not state.room_name: state.update_room()
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{restack_api_endpoint}/api/agents/AgentVoice", 
-                json={"input": {"room_id": room_name}, "action": "", "schedule": None, "taskQueue": "restack"}
+                json={"input": {"room_id": state.room_name}, "action": "", "schedule": None, "taskQueue": "restack"}
             )
             
             if response.status_code != 200: return {"error": "Failed to start agent"}, 500
@@ -330,7 +323,7 @@ async def ws(msg:str, send):
             elif message_type == "agent_status":
                 # Handle agent status updates
                 status_message = f"Agent {data.get('status', 'updated')}"
-                await send(Div(status_message, id="connection-status", cls="text-center mb-2 text-blue-500"))
+                await send(Div(status_message, id="connection-status", cls="text-center mb-2 text-primary"))
             
             elif message_type == "error":
                 # Handle error messages

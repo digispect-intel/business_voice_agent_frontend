@@ -1,3 +1,7 @@
+import uuid
+
+def generate_room_id(): return f"agent-dave-{uuid.uuid4().hex[:12]}"
+
 class AgentState:
     """Singleton class to manage agent state"""
     _instance = None
@@ -18,9 +22,9 @@ class AgentState:
         self.run_id = run_id
         self.is_agent_active = True
     
-    def update_room(self, room_name, connected=True):
+    def update_room(self, room_name=None, connected=True):
         """Update room connection status"""
-        self.room_name = room_name
+        self.room_name = room_name or generate_room_id()
         self.is_connected = connected
     
     def reset(self):
@@ -29,6 +33,7 @@ class AgentState:
         self.run_id = None
         self.is_connected = False
         self.is_agent_active = False
+        self.room_name = None
     
     def get_connection_state(self):
         """Get the current connection state"""
